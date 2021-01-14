@@ -1,6 +1,6 @@
 # Planka Import Utility #
 
-[![License: CC0-1.0](https://img.shields.io/badge/License-CC0%201.0-green.svg)](http://creativecommons.org/publicdomain/zero/1.0/)
+![Docker Pulls](https://img.shields.io/docker/pulls/bjb28/planka-utility) ![GitHub](https://img.shields.io/github/license/bjb28/planka-utility)
 
 A python utility to import a structured JSON file into [Planka](https://planka.app/)
 
