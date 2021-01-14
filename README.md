@@ -11,9 +11,9 @@ This utility is currently in the pre-Alpha stages with significant limitations. 
 ## Scripts ##
 
 `planka-import` provides the following options:  
-* `--load` - When provided a project name and json file, a new project is created and populated form the json.  
-* `--new` - **LIMITED FUNCTIONALITY** When provided a project name and json file, a project will be populated from the json file.  
-* `--template` - **KNOW BUG** When provided a project name, a json file is produced to be used as a template for the other options.  
+* `--load` - When provided a project name and JSON file, a new project is created and populated form the JSON.  
+* `--new` - **LIMITED FUNCTIONALITY** When provided a project name and JSON file, a project will be populated from the JSON file.  
+* `--template` - **KNOW BUG** When provided a project name, a JSON file is produced to be used as a template for the other options.  
 
 ## Usage ##
 
