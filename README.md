@@ -1,6 +1,6 @@
 # Planka Import Utility #
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: CC0-1.0](https://img.shields.io/badge/License-CC0%201.0-green.svg)](http://creativecommons.org/publicdomain/zero/1.0/)
 
 A python utility to import a structured JSON file into [Planka](https://planka.app/)
 
@@ -59,4 +59,4 @@ a `planka-utility` container.
 
 ## License ##
 
-This is [MIT Licensed](https://github.com/bjb28/planka-utility/blob/main/LICENSE)
+This is [CC0 1.0 Universal](https://github.com/bjb28/planka-utility/blob/main/LICENSE)
