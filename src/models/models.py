@@ -44,3 +44,120 @@ class Model(object):
     def parse(cls, json):
         """Parse a JSON object into a model instance."""
         raise NotImplementedError
+
+
+class Project(Model):
+    """The Project class."""
+
+    _valid_properties: Dict[str, Any] = {
+        "id": None,
+        "name": None,
+        "boards": list(),
+    }
+
+    def __init__(self, **kwargs):
+        """Create a new project instance."""
+        for key, default in Project._valid_properties.items():
+            setattr(self, key, kwargs.get(key, default))
+
+    @classmethod
+    def parse(cls, json):
+        """Parse project json."""
+        project = cls()
+        for key, val in json.items():
+            if key == "boards":
+                for index, board in enumerate(val):
+                    val[index] = Board.parse(board)
+
+            if key in cls._valid_properties:
+                setattr(project, key, val)
+        return project
+
+
+class Board(Model):
+    """The Board class."""
+
+    _valid_properties: Dict[str, Any] = {
+        "id": None,
+        "name": None,
+        "position": 0,
+        "lists": list(),
+        "project_id": None,
+    }
+
+    def __init__(self, **kwargs):
+        """Create a new board instance."""
+        for key, default in Board._valid_properties.items():
+            setattr(self, key, kwargs.get(key, default))
+
+    @classmethod
+    def parse(cls, json):
+        """Parse board json."""
+        board = cls()
+        for key, val in json.items():
+            if key == "lists":
+                for index, _list in enumerate(val):
+                    val[index] = List.parse(_list)
+
+            if key in cls._valid_properties:
+                setattr(board, key, val)
+
+        return board
+
+
+class List(Model):
+    """The List class."""
+
+    _valid_properties: Dict[str, Any] = {
+        "id": None,
+        "name": None,
+        "position": 0,
+        "cards": list(),
+        "board_id": None,
+    }
+
+    def __init__(self, **kwargs):
+        """Create a new list instance."""
+        for key, default in List._valid_properties.items():
+            setattr(self, key, kwargs.get(key, default))
+
+    @classmethod
+    def parse(cls, json):
+        """Parse list json."""
+        _list = cls()
+        for key, val in json.items():
+            if key == "cards":
+                for index, card in enumerate(val):
+                    val[index] = Card.parse(card)
+
+            if key in cls._valid_properties:
+                setattr(_list, key, val)
+
+        return _list
+
+
+class Card(Model):
+    """The Card class."""
+
+    _valid_properties: Dict[str, Any] = {
+        "id": None,
+        "name": None,
+        "position": 0,
+        "tasks": list(),
+        "list_id": None,
+    }
+
+    def __init__(self, **kwargs):
+        """Create a new card instance."""
+        for key, default in Card._valid_properties.items():
+            setattr(self, key, kwargs.get(key, default))
+
+    @classmethod
+    def parse(cls, json):
+        """Parse card json."""
+        card = cls()
+        for key, val in json.items():
+            if key in cls._valid_properties:
+                setattr(card, key, val)
+
+        return card
