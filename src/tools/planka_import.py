@@ -119,7 +119,18 @@ def execute_query(connection, query):
         logging.error(f"The error '{e}' occurred")
 
 
-def load_cards(connection, project_id, file_name):
+def pull_project(connection, project):
+    """Pull a project from Planka
+
+    Args:
+        connection (Psycopg2 Connection): The connection to the postgres database.
+        project (Project): A Project object representing a Planka database.
+    """
+    # TODO Build this out.
+    pass
+
+
+def load_cards(connection, project, file_name):
     """Load data into cards.
 
     Args:
@@ -132,49 +143,53 @@ def load_cards(connection, project_id, file_name):
 
     logging.debug(f"Loading data structure from {file_name}")
 
+    # Load project from JSON.
     with open(file_name, "r") as fp:
-        data = json.load(fp)
+        project.load_json(json.load(fp))
 
-    # Get the board's ID
-    query = """SELECT id FROM board WHERE name='Investigate'"""
-    board_id = execute_read_query(connection, query)[0][0]
-    logging.debug(f"Board id: {board_id}")
+    for board_index, board in enumerate(project.boards):
+        # Pull the board info from planka.
+        logging.info(f"Pulling {board.name} Board.")
 
-    # Get the new list's ID
-    query = """SELECT id FROM list WHERE name='To-Review'"""
-    list_id = execute_read_query(connection, query)[0][0]
-    logging.debug(f"List id: {list_id}")
+        board.id = execute_read_query(connection, board.select_id())[0][0]
+        logging.debug(f"{board.name} Board id: {board.id}")
 
-    # Add the host card.
-    for card_index, card in enumerate(data["hosts"]):
+        for list_index, _list in enumerate(board.lists):
+            # Pull the list info from planka.
+            logging.info(f"Pulling {_list.name} List.")
+            _list.id = execute_read_query(connection, _list.select_id())[0][0]
+            logging.debug(f"{_list.name}List id: {_list.id}")
 
-        # Calculate the next card postion.
-        card_position = card_position + (card_index * POSITION_GAP)
+            # TODO Check if cards exists.
+            for card_index, card in enumerate(_list.cards):
+                # Process the cards. ASSUMES NO CARDS IN LIST.
+                card_position = card_position + (card_index * POSITION_GAP)
 
-        logging.info(f"Building {card['ip']} Card.")
-        query = f"""
-            INSERT INTO
-                card (board_id, list_id, name, position)
-            VALUES
-                ({board_id}, {list_id}, '{card['ip']}', {card_position})
-        """
-        execute_query(connection, query)
+                card.position = card_position
+                card.board_id = board.id
+                card.list_id = _list.id
 
-        # Get the new card's ID
-        query = f"""SELECT id FROM card WHERE name='{card['ip']}'"""
-        card_id = execute_read_query(connection, query)[0][0]
-        logging.debug(f"Card id: {card_id}")
+                logging.info(f"Building {card.name} Card.")
 
-        # Add port tasks
-        for task in card["ports"]:
-            logging.debug(f"Adding {task}.")
-            query = f"""
-                INSERT INTO
-                    task (card_id, name, is_completed)
-                VALUES
-                    ({card_id},'{task}', false)
-            """
-            execute_query(connection, query)
+                execute_query(connection, card.insert())
+
+                # Get the new card's ID
+                card.id = execute_read_query(connection, card.select_id())[0][0]
+                logging.debug(f"Card id: {card.id}")
+
+                for task in card.tasks:
+                    logging.debug(f"Adding {task}.")
+                    query = f"""
+                        INSERT INTO
+                            task (card_id, name, is_completed)
+                        VALUES
+                            ({card.id},'{task}', false)
+                    """
+                    execute_query(connection, query)
+
+                _list.cards[card_index] = card
+            board.lists[list_index] = _list
+        project.boards[board_index] = board
 
 
 def build_new(connection, project, file_name):
@@ -392,15 +407,16 @@ def main():
         build_new(connection, project, args.FILE_NAME)
 
     elif args.load:
+        project = Project(name=args.PROJECT_NAME)
+
         # Gets value from first item in list and tuple
-        query = f"""SELECT id FROM project WHERE name='{args.PROJECT_NAME}'"""
         try:
-            project_id = execute_read_query(connection, query)[0][0]
+            project.id = execute_read_query(connection, project.select_id())[0][0]
         except IndexError:
-            logging.error(f"Project {args.PROJECT_NAME} does not exist.")
+            logging.error(f"Project {project.name} does not exist.")
             return 1
 
-        load_cards(connection, project_id, args.FILE_NAME)
+        load_cards(connection, project, args.FILE_NAME)
 
 
 if __name__ == "__main__":
