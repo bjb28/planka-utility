@@ -6,7 +6,7 @@ A python utility to import a structured JSON file into [Planka](https://planka.a
 
 ## Functions ##
  
-This utility is currently in the pre-Alpha stages with significant limitations. However, creating a new project with pre-defined boards, lists, cards, and tasks works.  The functionality to load into a previously created project does not currently work as it is designed with a specific project in mind. Future evolution to the Alpha stage will allow this to work on any projects with a structured JSON file. 
+This utility is currently in the pre-Alpha stages with significant limitations. However, creating a new project with pre-defined boards, lists, cards, and tasks works.  The functionality to load cards into a previously created project works as long as there are currently no cards in that specific list. 
 
 ## Scripts ##
 
@@ -35,7 +35,13 @@ planka-import
 
 ### Pull or build Docker image ###
 
-Build `planka-utility` from source:
+Pull `bjb28/planka-utility` from the Docker repository:
+
+```console
+docker pull bjb28/planka-utility
+```
+
+Or build `planka-utility` from source:
 
 ```console
 git clone https://github.com/bjb28/planka-utility.git
