@@ -81,6 +81,7 @@ def card_json():
             "name": "Test Card 1",
             "tasks": ["Task 1", "Task 2"],
             "position": 0,
+            "board_id": 1,
             "list_id": 1,
         }
     )
@@ -92,5 +93,10 @@ def card_object():
     """Return a Card Object."""
 
     return Card(
-        id=1, name="Test Card 1", tasks=["Task 1", "Task 2"], position=0, list_id=1
+        id=1,
+        name="Test Card 1",
+        tasks=["Task 1", "Task 2"],
+        position=0,
+        board_id=1,
+        list_id=1,
     )

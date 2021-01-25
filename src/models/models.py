@@ -15,6 +15,10 @@ class Model(object):
     def _is_builtin(cls, obj):
         return isinstance(obj, (int, float, str, list, dict, bool))
 
+    def __repr__(self):
+        """Return string representation of an object."""
+        return repr(f"{type(self)}: {self.id} - {self.name}")
+
     def as_dict(self):
         """Return a dict representation of the resource."""
         result = {}
@@ -73,6 +77,30 @@ class Project(Model):
                 setattr(project, key, val)
         return project
 
+    def insert(self):
+        """Return SQL INSERT query for a Project by name."""
+        return f"""INSERT INTO project (name) VALUES ('{self.name}')"""
+
+    def load_json(self, json, force=False):
+        """Load a JSON into a Project Object.
+
+        Args:
+            json (JSON Object): The JSON object to be loaded.
+            force (bool, optional): Set to True to over ride any existing attributes. Defaults to False.
+        """
+        for key, val in json.items():
+            if key == "boards":
+                for index, board in enumerate(val):
+                    # TODO Check if board already exists.
+                    val[index] = Board.parse(board)
+                setattr(self, key, val)
+            elif getattr(self, key) == self._valid_properties[key] or force:
+                setattr(self, key, val)
+
+    def select_id(self):
+        """Return SQL SELECT query for a Project id by the name."""
+        return f"""SELECT id FROM project WHERE name='{self.name}'"""
+
 
 class Board(Model):
     """The Board class."""
@@ -103,6 +131,19 @@ class Board(Model):
                 setattr(board, key, val)
 
         return board
+
+    def insert(self):
+        """Return SQL INSERT query for a Board requires project id, name, and position."""
+        return f"""
+            INSERT INTO
+                board (project_id, type, name, position)
+            VALUES
+                ({self.project_id}, 'kanban', '{self.name}', {self.position})
+        """
+
+    def select_id(self):
+        """Return SQL SELECT query for a Board id by the name."""
+        return f"""SELECT id FROM board WHERE name='{self.name}'"""
 
 
 class List(Model):
@@ -135,6 +176,19 @@ class List(Model):
 
         return _list
 
+    def insert(self):
+        """Return SQL INSERT query for a List requires board id, name, and position."""
+        return f"""
+            INSERT INTO
+                list (board_id, name, position)
+            VALUES
+                ({self.board_id}, '{self.name}', {self.position})
+        """
+
+    def select_id(self):
+        """Return SQL SELECT query for a List id by the name."""
+        return f"""SELECT id FROM list WHERE name='{self.name}'"""
+
 
 class Card(Model):
     """The Card class."""
@@ -144,6 +198,7 @@ class Card(Model):
         "name": None,
         "position": 0,
         "tasks": list(),
+        "board_id": None,
         "list_id": None,
     }
 
@@ -161,3 +216,16 @@ class Card(Model):
                 setattr(card, key, val)
 
         return card
+
+    def insert(self):
+        """Return SQL INSERT query for a Card requires board id, list id, name, and position."""
+        return f"""
+                    INSERT INTO
+                        card (board_id, list_id, name, position)
+                    VALUES
+                        ({self.board_id}, {self.list_id}, '{self.name}', {self.position})
+                """
+
+    def select_id(self):
+        """Return SQL SELECT query for a Card id by the name."""
+        return f"""SELECT id FROM card WHERE name='{self.name}'"""
