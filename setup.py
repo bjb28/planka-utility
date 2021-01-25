@@ -1,10 +1,10 @@
 # Standard Python Libraries
 import codecs
 from glob import glob
-from os.path import abspath, dirname, join
+from os.path import abspath, basename, dirname, join, splitext
 
 # Third-Party Libraries
-from setuptools import basename, setup, find_packages, splitext
+from setuptools import find_packages, setup
 
 
 # Below two methods were pulled from:
