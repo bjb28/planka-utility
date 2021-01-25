@@ -1,9 +1,10 @@
 # Standard Python Libraries
 import codecs
-from os.path import abspath, dirname, join
+from glob import glob
+from os.path import abspath, basename, dirname, join, splitext
 
 # Third-Party Libraries
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 
 # Below two methods were pulled from:
@@ -41,8 +42,11 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3.7",
     ],
+    python_requires=">=3.7.7",
     package_dir={"": "src"},
     packages=find_packages("src"),
+    py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
+    include_package_data=True,
     install_requires=[
         "psycopg2-binary",
         "setuptools >= 24.2.0",
