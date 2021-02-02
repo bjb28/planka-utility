@@ -1,6 +1,8 @@
 # Planka Import Utility #
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/bjb28/planka-utility) ![GitHub](https://img.shields.io/github/license/bjb28/planka-utility)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/bjb28/planka-utility.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bjb28/planka-utility/alerts/)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/bjb28/planka-utility.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bjb28/planka-utility/context:python)
 
 A python utility to import a structured JSON file into [Planka](https://planka.app/)
 
