@@ -132,6 +132,11 @@ class Board(Model):
 
         return board
 
+    @classmethod
+    def max_position(cls):
+        """Return SQL query to get the highest board postion."""
+        return """SELECT MAX(position) FROM board"""
+
     def insert(self):
         """Return SQL INSERT query for a Board requires project id, name, and position."""
         return f"""
@@ -140,6 +145,12 @@ class Board(Model):
             VALUES
                 ({self.project_id}, 'kanban', '{self.name}', {self.position})
         """
+
+    def select_board(self):
+        """Return SQL SELECT query for a Board by the name."""
+        return (
+            f"""SELECT id, position, project_id FROM board WHERE name='{self.name}'"""
+        )
 
     def select_id(self):
         """Return SQL SELECT query for a Board id by the name."""
@@ -185,6 +196,15 @@ class List(Model):
                 ({self.board_id}, '{self.name}', {self.position})
         """
 
+    @classmethod
+    def max_position(cls):
+        """Return SQL query to get the highest list postion."""
+        return """SELECT MAX(position) FROM list"""
+
+    def select_list(self):
+        """Return SQL SELECT query for a List by the name."""
+        return f"""SELECT id, position, board_id FROM list WHERE name='{self.name}'"""
+
     def select_id(self):
         """Return SQL SELECT query for a List id by the name."""
         return f"""SELECT id FROM list WHERE name='{self.name}'"""
@@ -217,6 +237,10 @@ class Card(Model):
 
         return card
 
+    def get_tasks(self):
+        """Return SQL query to get the tasks associated with a card."""
+        return f"""SELECT name FROM task WHERE card_id={self.id}"""
+
     def insert(self):
         """Return SQL INSERT query for a Card requires board id, list id, name, and position."""
         return f"""
@@ -225,6 +249,15 @@ class Card(Model):
                     VALUES
                         ({self.board_id}, {self.list_id}, '{self.name}', {self.position})
                 """
+
+    @classmethod
+    def max_position(cls):
+        """Return SQL query to get the highest card postion."""
+        return """SELECT MAX(position) FROM card"""
+
+    def select_card(self):
+        """Return SQL SELECT query for a Card by the name."""
+        return f"""SELECT id, position, board_id, list_id FROM card WHERE name='{self.name}'"""
 
     def select_id(self):
         """Return SQL SELECT query for a Card id by the name."""
