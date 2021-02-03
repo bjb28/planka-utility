@@ -52,7 +52,14 @@ setup(
         "setuptools >= 24.2.0",
     ],
     extras_require={
-        "dev": ["black >= 20.8b1", "flake8 >= 3.8.4", "pytest", "ipython >= 7.0"],
+        "dev": [
+            "black >= 20.8b1",
+            "coverage",
+            "flake8 >= 3.8.4",
+            "pytest",
+            "pytest-cov",
+            "ipython >= 7.0",
+        ],
     },
     entry_points={
         "console_scripts": [
