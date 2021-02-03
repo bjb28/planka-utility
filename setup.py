@@ -55,6 +55,7 @@ setup(
         "dev": [
             "black >= 20.8b1",
             "coverage",
+            "coveralls != 1.11.0",
             "flake8 >= 3.8.4",
             "pytest",
             "pytest-cov",

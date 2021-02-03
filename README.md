@@ -1,6 +1,7 @@
 # Planka Import Utility #
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/bjb28/planka-utility) ![GitHub](https://img.shields.io/github/license/bjb28/planka-utility)
+[![Coverage Status](https://coveralls.io/repos/github/bjb28/planka-utility/badge.svg?branch=add-builds)](https://coveralls.io/github/bjb28/planka-utility?branch=add-builds)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/bjb28/planka-utility.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bjb28/planka-utility/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/bjb28/planka-utility.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bjb28/planka-utility/context:python)
 
@@ -14,8 +15,8 @@ This utility is currently in the pre-Alpha stages with significant limitations. 
 
 `planka-import` provides the following options:  
 * `--load` - When provided a project name and JSON file, a new project is created and populated form the JSON.  
-* `--new` - **LIMITED FUNCTIONALITY** When provided a project name and JSON file, a project will be populated from the JSON file.  
-* `--template` - **KNOW BUG** When provided a project name, a JSON file is produced to be used as a template for the other options.  
+* `--new` - When provided a project name and JSON file, a project will be updated to include the JSON file.  
+* `--template` - **KNOWN BUG** When provided a project name, a JSON file is produced to be used as a template for the other options.  
 
 ## Usage ##
 
