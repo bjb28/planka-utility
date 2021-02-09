@@ -3,10 +3,10 @@
 echo '################################################################################'
 echo '# The following output is used to setup aliases to containerized commands.'
 echo '# To apply these changes in a shell, eval the output of this container:'
-echo '#   eval "$(docker run planka-utility)"'
+echo '#   eval "$(docker run bjb28/planka-utility)"'
 echo '# '
 echo '# Environment variable:'
-echo '# PLANKA_UTILITY_IMAGE, defaults to "planka-utility" if not set'
+echo '# PLANKA_UTILITY_IMAGE, defaults to "bjb28/planka-utility" if not set'
 echo '# '
 echo '################################################################################'
 echo
@@ -15,8 +15,8 @@ cd /usr/local/bin
 
 for f in planka-*
 do
-  echo alias $f=\"docker run -it --network host --rm --volume \\\`pwd\\\`:/home/planka \\\"\\\${PLANKA_UTILITY_IMAGE:-planka-utility}\\\" $f\"
+  echo alias $f=\"docker run -it --network host --rm --volume \\\`pwd\\\`:/home/planka \\\"\\\${PLANKA_UTILITY_IMAGE:-bjb28/planka-utility}\\\" $f\"
 done
 
 # Create an alias to execute a shell in the planka-utility container
-echo alias planka-tools-bash=\"docker run -it --rm --network host --volume \\\`pwd\\\`:/home/planka \\\"\\\${PLANKA_UTILITY_IMAGE:-planka-utility}\\\" /bin/bash\"
+echo alias planka-tools-bash=\"docker run -it --rm --network host --volume \\\`pwd\\\`:/home/planka \\\"\\\${PLANKA_UTILITY_IMAGE:-bjb28/planka-utility}\\\" /bin/bash\"
