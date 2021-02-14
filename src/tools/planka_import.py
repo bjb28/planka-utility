@@ -131,7 +131,7 @@ def pull_project(connection, project):
     pass
 
 
-def add_board(connection, board, project_id):
+def add_board(connection, board):
     """Add board to Planka.
 
     A method to add a board to planka if it does not exists.
@@ -141,7 +141,6 @@ def add_board(connection, board, project_id):
     Args:
         connection (Psycopg2 Connection): The connection to the postgres database.
         board (Board): A Board object representing a Planka board.
-        project_id (int): The project ID for the board.
 
     Returns:
         Board: A fully populated Board object.
@@ -152,17 +151,15 @@ def add_board(connection, board, project_id):
             connection, board.select_board()
         )[0]
     except IndexError:
-        # TODO Add validation to check a new board is desired.
-        logging.warning(f"{board.name} not found. Adding board.")
+        logging.info(f"{board.name} not found. Adding board.")
 
         # Find last board postion and adds postion gap to the value.
         prior_position = execute_read_query(connection, board.max_position())[0][0]
+
         if prior_position:
             board.position = prior_position + POSITION_GAP
         else:
             board.position = 0
-
-        board.project_id = project_id
 
         # Insert the new board.
         execute_query(connection, board.insert())
@@ -173,7 +170,7 @@ def add_board(connection, board, project_id):
     return board
 
 
-def add_list(connection, _list, board_id):
+def add_list(connection, _list):
     """Add list to Planka.
 
     A method to add a list to planka if it does not exists.
@@ -183,19 +180,18 @@ def add_list(connection, _list, board_id):
     Args:
         connection (Psycopg2 Connection): The connection to the postgres database.
         list (List): A List object representing a Planka list.
-        board_id (int): The board ID for the list.
 
     Returns:
         List: A fully populated List object.
     """
     # Get the list ID or crate new list if not found.
     try:
+        logging.debug(f"List Query: {_list.select_list()}")
         (_list.id, _list.position, _list.board_id) = execute_read_query(
             connection, _list.select_list()
         )[0]
     except IndexError:
-        # TODO Add validation to check a new board is desired.
-        logging.warning(f"{_list.name} not found. Adding list.")
+        logging.info(f"{_list.name} not found. Adding list.")
 
         # Find last list postion and adds postion gap to the value.
         prior_position = execute_read_query(connection, _list.max_position())[0][0]
@@ -204,18 +200,16 @@ def add_list(connection, _list, board_id):
         else:
             _list.position = 0
 
-        _list.board_id = board_id
-
-        # Insert the new board.
+        # Insert the new list.
         execute_query(connection, _list.insert())
 
-        # Get the new board's ID
+        # Get the new list's ID
         _list.id = execute_read_query(connection, _list.select_id())[0][0]
 
     return _list
 
 
-def add_card(connection, card, board_id, list_id):
+def add_card(connection, card):
     """Add card to Planka.
 
     A method to add a card to planka if it does not exists.
@@ -225,8 +219,6 @@ def add_card(connection, card, board_id, list_id):
     Args:
         connection (Psycopg2 Connection): The connection to the postgres database.
         card (Card): A Card object representing a Planka card.
-        board_id (int): The board ID for the card.
-        list_id (int): The list ID for the card.
 
     Returns:
         Card: A fully populated Card object.
@@ -237,8 +229,7 @@ def add_card(connection, card, board_id, list_id):
             connection, card.select_card()
         )[0]
     except IndexError:
-        # TODO Add validation to check a new card is desired.
-        logging.warning(f"{card.name} not found. Adding card.")
+        logging.info(f"{card.name} not found. Adding card.")
 
         # Find last card postion and adds postion gap to the value.
         prior_position = execute_read_query(connection, card.max_position())[0][0]
@@ -246,9 +237,6 @@ def add_card(connection, card, board_id, list_id):
             card.position = prior_position + POSITION_GAP
         else:
             card.position = 0
-
-        card.board_id = board_id
-        card.list_id = list_id
 
         # Insert the new board.
         execute_query(connection, card.insert())
@@ -302,7 +290,9 @@ def load_cards(connection, project, file_name):
         # Pull the board info from planka.
         logging.info(f"Pulling {board.name} Board.")
 
-        board = add_board(connection, board, project.id)
+        board.project_id = project.id
+
+        board = add_board(connection, board)
 
         logging.debug(f"{board.name} Board id: {board.id}")
 
@@ -310,7 +300,9 @@ def load_cards(connection, project, file_name):
             # Pull the list info from planka.
             logging.info(f"Pulling {_list.name} List.")
 
-            _list = add_list(connection, _list, board.id)
+            _list.board_id = board.id
+
+            _list = add_list(connection, _list)
 
             logging.debug(f"{_list.name}List id: {_list.id}")
 
@@ -318,7 +310,10 @@ def load_cards(connection, project, file_name):
             for card_index, card in enumerate(_list.cards):
                 # Process the cards. ASSUMES NO CARDS IN LIST.
 
-                card = add_card(connection, card, board.id, _list.id)
+                card.board_id = board.id
+                card.list_id = _list.id
+
+                card = add_card(connection, card)
 
                 logging.debug(f"Card id: {card.id}")
 
@@ -340,70 +335,47 @@ def build_new(connection, project, file_name):
         project (Project): The project object that the boards will be added under.
     """
 
-    # Hold the postion of each item.
-    board_position = POSITION_GAP
-    list_position = POSITION_GAP
-    card_position = POSITION_GAP
-
     logging.debug(f"Loading data structure from {file_name}")
 
     with open(file_name, "r") as fp:
         project.load_json(json.load(fp))
 
     for board_index, board in enumerate(project.boards):
-        logging.info(f"Building {board.name} Board.")
+        # Pull the board info from planka.
+        logging.info(f"Checking for {board.name} Board.")
 
-        # Calculate the next board postion.
-        board_position = board_position + (board_index * POSITION_GAP)
-        board.position = board_position
         board.project_id = project.id
 
-        execute_query(connection, board.insert())
+        board = add_board(connection, board)
 
-        # Get the new board's ID
-        board.id = execute_read_query(connection, board.select_id())[0][0]
-        logging.debug(f"Board id: {board.id}")
+        logging.debug(f"{board.name} Board id: {board.id}")
 
         for list_index, _list in enumerate(board.lists):
-            logging.info(f"Building {_list.name} List.")
+            # Pull the list info from planka.
+            logging.info(f"Checking for {_list.name} List.")
 
-            # Calculate the next list position.
-            list_position = list_position + (list_index * POSITION_GAP)
-
-            _list.position = list_position
             _list.board_id = board.id
+            logging.debug(f"Board id: {board.id}")
 
-            execute_query(connection, _list.insert())
+            _list = add_list(connection, _list)
 
-            # Get the new list's ID
-            _list.id = execute_read_query(connection, _list.select_id())[0][0]
-            logging.debug(f"List id: {_list.id}")
+            logging.debug(f"{_list.name} List id: {_list.id}")
 
+            # TODO Check if cards exists.
             for card_index, card in enumerate(_list.cards):
-                # Calculate the next card postion.
-                card_position = card_position + (card_index * POSITION_GAP)
+                # Process the cards. ASSUMES NO CARDS IN LIST.
 
-                card.position = card_position
                 card.board_id = board.id
                 card.list_id = _list.id
 
-                logging.info(f"Building {card.name} Card.")
+                card = add_card(connection, card)
 
-                execute_query(connection, card.insert())
-
-                # Get the new card's ID
-                card.id = execute_read_query(connection, card.select_id())[0][0]
                 logging.debug(f"Card id: {card.id}")
 
+                db_tasks = execute_read_query(connection, card.get_tasks())
+
                 for task in card.tasks:
-                    logging.debug(f"Adding {task}.")
-                    query = f"""
-                        INSERT INTO
-                            task (card_id, name, is_completed)
-                        VALUES
-                            ({card.id},'{task}', false)
-                    """
-                    execute_query(connection, query)
+                    add_task(connection, task, db_tasks, card.id)
 
                 _list.cards[card_index] = card
             board.lists[list_index] = _list
@@ -526,13 +498,20 @@ def main():
         project = Project(name=args.PROJECT_NAME)
 
         # Create the new Project.
-        execute_query(connection, project.insert())
+        try:
+            # Checks if a project id is found and exits if there is one.
+            execute_read_query(connection, project.select_id())[0][0]
+            logging.critical(f'Project "{project.name}" exists. Exiting.')
+            return 1
+        except IndexError:
+            # If IndexError is raised then the project does not exist in the DB.
+            logging.info(f"Createing {project.name}.")
+            execute_query(connection, project.insert())
 
         # Gets value from first item in list and tuple
         project.id = execute_read_query(connection, project.select_id())[0][0]
 
         # Adds demo user to project
-        # TODO handle already exists error.
         query = """SELECT id FROM user_account WHERE username='demo'"""
         user_id = execute_read_query(connection, query)[0][0]
 
@@ -542,6 +521,7 @@ def main():
             VALUES
                 ({project.id}, {user_id})
         """
+
         execute_query(connection, query)
 
         build_new(connection, project, args.FILE_NAME)

@@ -100,3 +100,26 @@ def card_object():
         board_id=1,
         list_id=1,
     )
+
+
+@pytest.fixture
+def template_json():
+    """Return the template json."""
+    return {
+        "boards": [
+            {
+                "name": "Board Name",
+                "lists": [
+                    {
+                        "name": "List Name",
+                        "cards": [
+                            {
+                                "name": "Card Name",
+                                "tasks": ["Take 1", "Task 2"],
+                            }
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
