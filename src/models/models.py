@@ -49,6 +49,11 @@ class Model(object):
         """Parse a JSON object into a model instance."""
         raise NotImplementedError
 
+    @classmethod
+    def max_position(cls):
+        """Return SQL query to get the highest board postion."""
+        return f"""SELECT MAX(position) FROM {cls.__name__.lower()}"""
+
 
 class Project(Model):
     """The Project class."""
@@ -110,7 +115,7 @@ class Board(Model):
         "name": None,
         "position": 0,
         "lists": list(),
-        "project_id": None,
+        "project_id": 0,
     }
 
     def __init__(self, **kwargs):
@@ -132,11 +137,6 @@ class Board(Model):
 
         return board
 
-    @classmethod
-    def max_position(cls):
-        """Return SQL query to get the highest board postion."""
-        return """SELECT MAX(position) FROM board"""
-
     def insert(self):
         """Return SQL INSERT query for a Board requires project id, name, and position."""
         return f"""
@@ -148,13 +148,11 @@ class Board(Model):
 
     def select_board(self):
         """Return SQL SELECT query for a Board by the name."""
-        return (
-            f"""SELECT id, position, project_id FROM board WHERE name='{self.name}'"""
-        )
+        return f"""SELECT id, position, project_id FROM board WHERE name='{self.name}' AND project_id={self.project_id}"""
 
     def select_id(self):
         """Return SQL SELECT query for a Board id by the name."""
-        return f"""SELECT id FROM board WHERE name='{self.name}'"""
+        return f"""SELECT id FROM board WHERE name='{self.name}' AND project_id={self.project_id}"""
 
 
 class List(Model):
@@ -165,7 +163,7 @@ class List(Model):
         "name": None,
         "position": 0,
         "cards": list(),
-        "board_id": None,
+        "board_id": 0,
     }
 
     def __init__(self, **kwargs):
@@ -196,18 +194,13 @@ class List(Model):
                 ({self.board_id}, '{self.name}', {self.position})
         """
 
-    @classmethod
-    def max_position(cls):
-        """Return SQL query to get the highest list postion."""
-        return """SELECT MAX(position) FROM list"""
-
     def select_list(self):
         """Return SQL SELECT query for a List by the name."""
-        return f"""SELECT id, position, board_id FROM list WHERE name='{self.name}'"""
+        return f"""SELECT id, position, board_id FROM list WHERE name='{self.name}' AND board_id={self.board_id}"""
 
     def select_id(self):
         """Return SQL SELECT query for a List id by the name."""
-        return f"""SELECT id FROM list WHERE name='{self.name}'"""
+        return f"""SELECT id FROM list WHERE name='{self.name}' AND board_id={self.board_id}"""
 
 
 class Card(Model):
@@ -218,8 +211,8 @@ class Card(Model):
         "name": None,
         "position": 0,
         "tasks": list(),
-        "board_id": None,
-        "list_id": None,
+        "board_id": 0,
+        "list_id": 0,
     }
 
     def __init__(self, **kwargs):
@@ -250,15 +243,10 @@ class Card(Model):
                         ({self.board_id}, {self.list_id}, '{self.name}', {self.position})
                 """
 
-    @classmethod
-    def max_position(cls):
-        """Return SQL query to get the highest card postion."""
-        return """SELECT MAX(position) FROM card"""
-
     def select_card(self):
         """Return SQL SELECT query for a Card by the name."""
-        return f"""SELECT id, position, board_id, list_id FROM card WHERE name='{self.name}'"""
+        return f"""SELECT id, position, board_id, list_id FROM card WHERE name='{self.name}' AND board_id={self.board_id} AND list_id={self.list_id}"""
 
     def select_id(self):
         """Return SQL SELECT query for a Card id by the name."""
-        return f"""SELECT id FROM card WHERE name='{self.name}'"""
+        return f"""SELECT id FROM card WHERE name='{self.name}' AND board_id={self.board_id} AND list_id={self.list_id}"""
